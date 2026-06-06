@@ -19,10 +19,11 @@ public class JwtService {
             Keys.hmacShaKeyFor(SECRET.getBytes());
 
     // GENERATE JWT TOKEN
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
 
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(
                         new Date(System.currentTimeMillis() + 1000 * 60 * 60)
@@ -58,5 +59,10 @@ public class JwtService {
                 extractUsername(token);
 
         return extractedUsername.equals(username);
+    }
+
+    public String extractRole(String token) {
+        return extractClaims(token)
+                .get("role", String.class);
     }
 }

@@ -25,22 +25,49 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+            throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
+
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
                 )
+
                 .authorizeHttpRequests(auth -> auth
+
+                        // PUBLIC APIs
                         .requestMatchers(
                                 "/auth/register",
                                 "/auth/login",
                                 "/auth/hello"
                         ).permitAll()
-                        .anyRequest().authenticated()
+
+                        // ADMIN ONLY
+                        .requestMatchers(
+                                "/auth/admin",
+                                "/foods/add"
+                        ).hasRole("ADMIN")
+
+                        // USER + ADMIN
+                        .requestMatchers(
+                                "/foods/category/**",
+                                "/foods/search",
+                                "/auth/profile"
+                        ).hasAnyRole("USER", "ADMIN")
+
+                        // ALL OTHER APIs
+                        .anyRequest()
+                        .authenticated()
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+                .addFilterBefore(
+                        jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
@@ -49,6 +76,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
     ) throws Exception {
+
         return config.getAuthenticationManager();
     }
 }

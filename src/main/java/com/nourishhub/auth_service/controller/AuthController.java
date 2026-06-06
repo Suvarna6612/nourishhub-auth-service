@@ -62,7 +62,11 @@ public class AuthController {
             return "Invalid Password!";
         }
 
-        String token = jwtService.generateToken(user.getUsername());
+        String token =
+                jwtService.generateToken(
+                        user.getUsername(),
+                        user.getRole().name()
+                );
 
         return token;
     }
@@ -71,5 +75,11 @@ public class AuthController {
     public String profile() {
 
         return "Protected Profile API 🔐";
+    }
+
+    @GetMapping("/admin")
+    public String adminAccess() {
+
+        return "Welcome Admin 👑";
     }
 }
