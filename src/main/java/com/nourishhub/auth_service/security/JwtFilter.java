@@ -5,10 +5,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -16,10 +16,10 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
     @Override
     protected void doFilterInternal(
@@ -27,6 +27,16 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+
+        String path = request.getServletPath();
+
+        // Public APIs
+        if (path.equals("/auth/login") ||
+                path.equals("/auth/register")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String authHeader =
                 request.getHeader("Authorization");
@@ -46,14 +56,18 @@ public class JwtFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(
                                 username,
                                 null,
-                                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                                List.of(
+                                        new SimpleGrantedAuthority("ROLE_USER")
+                                )
                         );
 
-                SecurityContextHolder.getContext()
+                SecurityContextHolder
+                        .getContext()
                         .setAuthentication(authToken);
 
-                System.out.println("Authenticated User: "
-                        + username);
+                System.out.println(
+                        "Authenticated User: " + username
+                );
             }
         }
 

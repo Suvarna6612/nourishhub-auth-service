@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.nourishhub.auth_service.dto.LoginRequest;
 import java.util.Optional;
+import com.nourishhub.auth_service.entity.Role;
 
 @RestController
 @RequestMapping("/auth")
@@ -33,6 +34,7 @@ public class AuthController {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
+        user.setRole(Role.USER);
         userRepository.save(user);
 
         return "User Registered Successfully!";
